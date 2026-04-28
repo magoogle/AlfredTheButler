@@ -49,9 +49,9 @@ end
 function extension.reset()
     local local_player = get_local_player()
     if not local_player then return end
-    local new_position = vec3:new(-1670.6953125, -598.2548828125, 36.8857421875)
+    local new_position = vec3:new(2566.2158203125, -478.7431640625, 30.927734375)
     if task.reset_state == status_enum['MOVING'] then
-        new_position = vec3:new(-1651.9208984375, -598.6142578125, 36.3134765625)
+        new_position = vec3:new(2578.1103515625, -482.2646484375, 31.5029296875)
     end
     if BatmobilePlugin then
         BatmobilePlugin.set_target(plugin_label, new_position)

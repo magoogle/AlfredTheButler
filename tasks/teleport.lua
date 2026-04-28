@@ -59,16 +59,16 @@ end
 function extension.reset()
     local local_player = get_local_player()
     if not local_player then return end
-    local new_position = vec3:new(-1661.931640625, -596.4111328125, 36.90625)
+    local new_position = vec3:new(2578.1103515625, -482.2646484375, 31.5029296875)
     if tracker.last_task == 'stash' or
         tracker.last_task == 'restock' or
         tracker.last_task == 'stocktake'
     then
-        new_position = vec3:new(-1684.3427734375, -595.40625, 37.6484375)
+        new_position = vec3:new(2574.0361328125, -486.248046875, 31.5029296875)
     elseif tracker.last_task == 'salvage' then
-        new_position = vec3:new(-1680.57421875, -597.4794921875, 37.572265625)
+        new_position = vec3:new(2575.3134765625, -481.890625, 31.5029296875)
     elseif tracker.last_task ==  'sell' or tracker.last_task == 'gamble' then
-        new_position = vec3:new(-1670.6953125, -598.2548828125, 36.8857421875)
+        new_position = vec3:new(2566.2158203125, -478.7431640625, 30.927734375)
     end
     if BatmobilePlugin then
         BatmobilePlugin.set_target(plugin_label, new_position)
