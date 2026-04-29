@@ -29,7 +29,7 @@ local function teleport_with_debounce()
     end
     if debounce_time + debounce_timeout > get_time_since_inject() then return end
     debounce_time = get_time_since_inject()
-    teleport_to_waypoint(0x76D58)
+    teleport_to_waypoint(0x1CE51E)
     task.set_status(status_enum['EXECUTE'])
 end
 local extension = {}
