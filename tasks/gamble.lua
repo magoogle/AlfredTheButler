@@ -132,7 +132,7 @@ task.shouldExecute = function ()
         task.retry = 0
     end
 
-    if utils.player_in_zone('Skov_Temis') and
+    if utils.is_in_town() and
         tracker.trigger_tasks and
         not tracker.gamble_failed and
         not tracker.gamble_done and

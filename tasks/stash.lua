@@ -231,7 +231,7 @@ task.shouldExecute = function ()
     if tracker.trigger_tasks == false then
         task.retry = 0
     end
-    if utils.player_in_zone('Skov_Temis') and
+    if utils.is_in_town() and
         tracker.trigger_tasks and
         not tracker.stash_failed and
         not tracker.stash_done and

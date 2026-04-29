@@ -3,7 +3,10 @@ local plugin_version = '1.7.9'
 -- console.print("Lua Plugin - Alfred the Butler - Leoric - v" .. plugin_version)
 
 local utils = require 'core.utils'
+local town = require 'core.town'
 local gui = {}
+
+gui.town_options = town.options
 
 local affix_types = utils.get_item_affixes()
 local item_aspects = utils.get_item_aspects()
@@ -179,6 +182,7 @@ gui.elements = {
     },
 
     general_tree = tree_node:new(1),
+    town_choice = combo_box:new(0, get_hash(plugin_label .. '_town_choice')),
     explorer_path_angle_slider = slider_int:new(0, 360, 10, get_hash(plugin_label .. '_explorer_path_angle_slider')),
     max_inventory = slider_int:new(20,33, 25, get_hash(plugin_label .. '_max_inventory')),
     failed_action = combo_box:new(0, get_hash(plugin_label .. '_failed_action')),
@@ -225,6 +229,7 @@ function gui.render()
     if not gui.elements.main_tree:push('Alfred the Butler | Leoric | v' .. gui.plugin_version) then return end
     gui.elements.main_toggle:render('Enable', 'Enable alfred')
     if gui.elements.general_tree:push('General settings') then
+        gui.elements.town_choice:render('Home town', gui.town_options, 'Which town Alfred runs his errands in')
         gui.elements.use_keybind:render('Use keybind', 'Keybind to quick toggle the bot')
         if gui.elements.use_keybind:get() then
             gui.elements.keybind_toggle:render('Toggle Keybind', 'Toggle the bot for quick enable')

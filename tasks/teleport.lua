@@ -29,7 +29,7 @@ local function teleport_with_debounce()
     end
     if debounce_time + debounce_timeout > get_time_since_inject() then return end
     debounce_time = get_time_since_inject()
-    teleport_to_waypoint(0x1CE51E)
+    teleport_to_waypoint(utils.get_town().waypoint_sno)
     task.set_status(status_enum['EXECUTE'])
 end
 local extension = {}
@@ -59,16 +59,17 @@ end
 function extension.reset()
     local local_player = get_local_player()
     if not local_player then return end
-    local new_position = vec3:new(2578.1103515625, -482.2646484375, 31.5029296875)
+    local resets = utils.get_town().reset_positions
+    local new_position = resets.default
     if tracker.last_task == 'stash' or
         tracker.last_task == 'restock' or
         tracker.last_task == 'stocktake'
     then
-        new_position = vec3:new(2574.0361328125, -486.248046875, 31.5029296875)
+        new_position = resets.stash_restock_stocktake
     elseif tracker.last_task == 'salvage' then
-        new_position = vec3:new(2575.3134765625, -481.890625, 31.5029296875)
+        new_position = resets.salvage
     elseif tracker.last_task ==  'sell' or tracker.last_task == 'gamble' then
-        new_position = vec3:new(2566.2158203125, -478.7431640625, 30.927734375)
+        new_position = resets.sell_gamble
     end
     if BatmobilePlugin then
         BatmobilePlugin.set_target(plugin_label, new_position)
@@ -81,8 +82,8 @@ end
 function extension.is_done()
     local npc = extension.get_npc()
     local npc_location = utils.get_npc_location('PORTAL')
-    return not (utils.player_in_zone('Skov_Temis') or utils.player_in_zone('[sno none]')) or
-        (utils.player_in_zone('Skov_Temis') and npc == nil and utils.distance_to(npc_location) < 5)
+    return not (utils.is_in_town() or utils.player_in_zone('[sno none]')) or
+        (utils.is_in_town() and npc == nil and utils.distance_to(npc_location) < 5)
 end
 function extension.done()
     if BatmobilePlugin then
@@ -109,10 +110,10 @@ task.shouldExecute = function ()
         task.retry = 0
     end
     if tracker.teleport and
-        not utils.player_in_zone('Skov_Temis')
+        not utils.is_in_town()
     then
         return true
-    elseif utils.player_in_zone('Skov_Temis') and
+    elseif utils.is_in_town() and
         tracker.trigger_tasks and
         not tracker.teleport_failed and
         not tracker.teleport_done and
@@ -134,7 +135,7 @@ end
 task.baseExecute = task.Execute
 task.Execute = function ()
     if tracker.teleport and
-        not utils.player_in_zone('Skov_Temis') and
+        not utils.is_in_town() and
         not (tracker.gamble_done or tracker.gamble_failed) and
         not (tracker.sell_done or tracker.sell_failed) and
         not (tracker.salvage_done or tracker.salvage_failed) and

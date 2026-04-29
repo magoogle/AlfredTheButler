@@ -6,10 +6,13 @@ local tracker = require 'core.tracker'
 
 local status_enum = {
     IDLE = 'Idle',
-    WAITING = 'Waiting to be in Temis',
+    WAITING = 'Waiting to be in town',
     FAILED = 'Alfred has failed you (successfully failed XD), please copy logs to discord channel',
     STUCK = 'Alfred is stuck, you told him to not stash caches, and inventory is full of caches!'
 }
+local function waiting_status()
+    return 'Waiting to be in ' .. utils.get_town().display_name
+end
 
 local task = {
     name = 'Status',
@@ -49,7 +52,7 @@ end
 function task.shouldExecute()
     local should_execute = false
     local status = all_task_done()
-    if not utils.player_in_zone('Skov_Temis') and (not tracker.teleport or tracker.teleport_done) then
+    if not utils.is_in_town() and (not tracker.teleport or tracker.teleport_done) then
         should_execute = true
     elseif settings.allow_external and tracker.external_pause then
         should_execute = true
@@ -115,10 +118,10 @@ function task.Execute()
     if (settings.allow_external and tracker.external_trigger) or
         tracker.need_trigger or tracker.manual_trigger
     then
-        if not utils.player_in_zone('Skov_Temis') then
+        if not utils.is_in_town() then
             tracker.teleport = true
         end
-        if settings.get_export_keybind_state() and task.status ~= status_enum['WAITING'] and task.status ~= status_enum['FAILED'] then
+        if settings.get_export_keybind_state() and task.status ~= waiting_status() and task.status ~= status_enum['FAILED'] then
             utils.export_inventory_info()
         end
         if settings.stash_socketables == utils.stash_extra_enum['ALWAYS'] or
@@ -157,7 +160,7 @@ function task.Execute()
             BatmobilePlugin.pause(plugin_label)
         end
         tracker.trigger_tasks = true
-        task.status = status_enum['WAITING']
+        task.status = waiting_status()
     else
         task.status = status_enum['IDLE']
         tracker.last_task = task.name

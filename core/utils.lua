@@ -1,10 +1,18 @@
 ﻿local json = require 'core.json'
 local tracker = require 'core.tracker'
+local town = require 'core.town'
 
 local utils    = {
     settings = {},
     last_dump_time = 0,
 }
+
+function utils.get_town()
+    return town.get(utils.settings.town_choice)
+end
+function utils.is_in_town()
+    return get_current_world():get_current_zone_name() == utils.get_town().zone_name
+end
 local item_types = {
     'helm',
     'chest',
@@ -51,43 +59,24 @@ local item_restock_by_id = {}
 for _,item in pairs(item_restock) do
     item_restock_by_id[item.sno_id] = item
 end
-utils.npc_enum = {
-    BLACKSMITH = 'TWN_Skov_Temis_Crafter_Blacksmith',
-    JEWELER = 'TWN_Skov_Temis_Crafter_Jeweler',
-    SILVERSMITH = 'TWN_Skov_Vendor_Silversmith',
-    WEAPON = 'TWN_Skov_Temis_Vendor_Weapons',
-    STASH = 'Stash',
-    GAMBLER = 'TWN_Skov_Temis_Vendor_Gambler',
-    ALCHEMIST = 'TWN_Skov_Temis_Crafter_Alchemist',
-    HEALER = 'TWN_Skov_Temis_Service_Healer',
-    PIT_TOWER = 'TWN_Kehj_IronWolves_PitKey_Crafter',
-    PORTAL = 'TownPortal',
-}
-utils.npc_loc_enum = {
-    BLACKSMITH = vec3:new(2575.3134765625, -481.890625, 31.5029296875),
-    JEWELER = vec3:new(2599.4873046875, -481.2578125, 30.5166015625),
-    SILVERSMITH = vec3:new(2634.7548828125, -477.6875, 28.919921875),
-    WEAPON = vec3:new(2621.7822265625, -456.6396484375, 29.5615234375),
-    STASH = vec3:new(2574.0361328125, -486.248046875, 31.5029296875),
-    GAMBLER = vec3:new(2566.2158203125, -478.7431640625, 30.927734375),
-    ALCHEMIST = vec3:new(2599.4521484375, -483.7548828125, 30.5166015625),
-    HEALER = vec3:new(2590.2822265625, -466.7939453125, 30.927734375),
-    PIT_TOWER = vec3:new(2572.708984375, -498.4921875, 30.5166015625),
-    PORTAL = vec3:new(2578.1103515625, -482.2646484375, 31.5029296875)
-}
-utils.npc_via_loc_enum = {
-    GAMBLER = vec3:new(2568.7685546875, -471.8046875, 30.5166015625),
-    JEWELER = vec3:new(2621.5869140625, -500.4306640625, 28.919921875),
-}
+-- npc_enum / npc_loc_enum / npc_via_loc_enum / walls are sourced from the
+-- active town config (see core/town.lua). __index delegates per-key reads to
+-- whichever town is selected so existing call sites like
+-- `utils.npc_enum['GAMBLER']` keep working without changes.
+utils.npc_enum = setmetatable({}, {
+    __index = function(_, key) return utils.get_town().npc_enum[key] end,
+})
+utils.npc_loc_enum = setmetatable({}, {
+    __index = function(_, key) return utils.get_town().npc_loc_enum[key] end,
+})
+utils.npc_via_loc_enum = setmetatable({}, {
+    __index = function(_, key) return utils.get_town().npc_via_loc_enum[key] end,
+})
 -- Subzones where a wall forces routing through a middleman waypoint.
 -- Player must pass through `via` to enter or leave the area within `radius` of `inside_anchor`.
-utils.walls = {
-    {
-        inside_anchor = vec3:new(2566.2158203125, -478.7431640625, 30.927734375),
-        via = vec3:new(2568.7685546875, -471.8046875, 30.5166015625),
-        radius = 5,
-    },
-}
+function utils.get_walls()
+    return utils.get_town().walls or {}
+end
 utils.item_enum = {
     KEEP = 0,
     SALVAGE = 1,
@@ -326,7 +315,7 @@ function utils.compute_move_target(target_pos)
         move_state.via_passed = false
     end
 
-    for _, wall in ipairs(utils.walls or {}) do
+    for _, wall in ipairs(utils.get_walls()) do
         local player_inside = player_pos:dist_to(wall.inside_anchor) < wall.radius
         local target_inside = target_pos:dist_to(wall.inside_anchor) < wall.radius
         if player_inside ~= target_inside then
