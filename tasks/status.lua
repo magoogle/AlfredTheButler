@@ -115,6 +115,9 @@ function task.Execute()
     if (settings.allow_external and tracker.external_trigger) or
         tracker.need_trigger or tracker.manual_trigger
     then
+        if not utils.player_in_zone('Skov_Temis') then
+            tracker.teleport = true
+        end
         if settings.get_export_keybind_state() and task.status ~= status_enum['WAITING'] and task.status ~= status_enum['FAILED'] then
             utils.export_inventory_info()
         end
