@@ -38,7 +38,7 @@ function extension.get_npc()
 end
 function extension.move()
     if utils.player_in_zone('[sno none]') then return end
-    local npc_location = utils.get_npc_location('PORTAL')
+    local npc_location = utils.compute_move_target(utils.get_npc_location('PORTAL'))
     if BatmobilePlugin then
         BatmobilePlugin.set_target(plugin_label, npc_location)
         BatmobilePlugin.move(plugin_label)

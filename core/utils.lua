@@ -75,6 +75,19 @@ utils.npc_loc_enum = {
     PIT_TOWER = vec3:new(2572.708984375, -498.4921875, 30.5166015625),
     PORTAL = vec3:new(2578.1103515625, -482.2646484375, 31.5029296875)
 }
+utils.npc_via_loc_enum = {
+    GAMBLER = vec3:new(2568.7685546875, -471.8046875, 30.5166015625),
+    JEWELER = vec3:new(2621.5869140625, -500.4306640625, 28.919921875),
+}
+-- Subzones where a wall forces routing through a middleman waypoint.
+-- Player must pass through `via` to enter or leave the area within `radius` of `inside_anchor`.
+utils.walls = {
+    {
+        inside_anchor = vec3:new(2566.2158203125, -478.7431640625, 30.927734375),
+        via = vec3:new(2568.7685546875, -471.8046875, 30.5166015625),
+        radius = 5,
+    },
+}
 utils.item_enum = {
     KEEP = 0,
     SALVAGE = 1,
@@ -299,6 +312,36 @@ function utils.distance_to(target)
 end
 function utils.is_same_position(pos1, pos2)
     return pos1:x() == pos2:x() and pos1:y() == pos2:y() and pos1:z() == pos2:z()
+end
+
+local move_state = { last_target_key = nil, via_passed = false }
+function utils.compute_move_target(target_pos)
+    if not target_pos then return target_pos end
+    local player_pos = get_player_position()
+    if not player_pos then return target_pos end
+
+    local target_key = string.format('%.4f,%.4f,%.4f', target_pos:x(), target_pos:y(), target_pos:z())
+    if move_state.last_target_key ~= target_key then
+        move_state.last_target_key = target_key
+        move_state.via_passed = false
+    end
+
+    for _, wall in ipairs(utils.walls or {}) do
+        local player_inside = player_pos:dist_to(wall.inside_anchor) < wall.radius
+        local target_inside = target_pos:dist_to(wall.inside_anchor) < wall.radius
+        if player_inside ~= target_inside then
+            if move_state.via_passed then
+                return target_pos
+            end
+            if player_pos:dist_to(wall.via) < 2.5 then
+                move_state.via_passed = true
+                return target_pos
+            end
+            return wall.via
+        end
+    end
+
+    return target_pos
 end
 
 function utils.get_greater_affix_count(display_name)

@@ -31,7 +31,7 @@ function extension.get_npc()
     -- return utils.get_npc(utils.npc_enum['WEAPON'])
 end
 function extension.move()
-    local npc_location = utils.get_npc_location('GAMBLER')
+    local npc_location = utils.compute_move_target(utils.get_npc_location('GAMBLER'))
     if BatmobilePlugin then
         BatmobilePlugin.set_target(plugin_label, npc_location)
         BatmobilePlugin.move(plugin_label)
